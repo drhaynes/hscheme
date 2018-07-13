@@ -19,8 +19,13 @@ spaces = skipMany1 space
 escapedChars :: Parser Char
 escapedChars = do
   char '\\'
-  c <- oneOf "\\\"" --- either backslash or double quatation mark
-  return c
+  c <- oneOf "\\\"nrt" --- either backslash, double quatation mark, (n)ewline, (r)eturn, or (t)ab
+  return $ case c of
+    '\\' -> c
+    '"'  -> c
+    'n'  -> '\n'
+    'r'  -> '\r'
+    't'  -> '\t'
 
 parseString :: Parser LispVal
 parseString = do
