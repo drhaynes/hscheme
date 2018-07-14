@@ -9,6 +9,7 @@ data LispVal = Atom String
              | Number Integer
              | String String
              | Bool Bool
+             | Character Char
 
 symbol :: Parser Char
 symbol = oneOf "!#$%&|*+-/:<=>?@^_-"
@@ -33,6 +34,12 @@ parseString = do
   x <- many $ escapedChars <|> noneOf "\"\\"
   char '"'
   return $ String x
+
+parseCharacter :: Parser LispVal
+parseCharacter = do
+  string "#\\"
+  c <- anyChar
+  return $ Character c
 
 parseAtom :: Parser LispVal
 parseAtom = do
