@@ -37,9 +37,15 @@ parseString = do
 
 parseCharacter :: Parser LispVal
 parseCharacter = do
-  string "#\\"
-  c <- anyChar
-  return $ Character c
+  try $ string "#\\"
+  value <- try (string "newline" <|> string "space" <|> string "NEWLINE" <|> string "SPACE")
+          <|> do { c <- anyChar; notFollowedBy alphaNum ; return [c] }
+  return $ Character $ case value of
+    "space" -> ' '
+    "SPACE" -> ' '
+    "newline" -> '\n'
+    "NEWLINE" -> '\n'
+    otherwise -> (value !! 0)
 
 parseAtom :: Parser LispVal
 parseAtom = do
@@ -56,8 +62,9 @@ parseNumber = liftM (Number . read) $ many1 digit
 
 parseExpr :: Parser LispVal
 parseExpr = parseAtom
-         <|> parseString
-         <|> parseNumber
+        <|> parseString
+        <|> try parseNumber
+        <|> try parseCharacter
 
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
